@@ -1,14 +1,19 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
+// 生成ts类型文件
 const path = require('path')
 const fs = require('fs')
 const { Project } = require('ts-morph')
 const vueCompiler = require('@vue/compiler-sfc')
 const klawSync = require('klaw-sync')
+// klaw-sync是一个 Node.js 递归和快速文件系统walker，它是klaw的同步对应物。它递归地列出目录中的所有文件和目录，并返回一个对象数组，每个对象都有两个属性：path和stats。path是文件或目录的完整路径，stats是fs.Stats 的一个实例
 const ora = require('ora')
-
+// 主要用来实现node.js命令行环境的loading效果，和显示各种状态的图标等
 const TSCONFIG_PATH = path.resolve(__dirname, '../tsconfig.json')
+
 const DEMO_RE = /\/demo\/\w+\.vue$/
+
 const TEST_RE = /__test__|__tests__/
+// 不包含的文件
 const excludedFiles = [
   'mock',
   'package.json',
@@ -46,12 +51,13 @@ const genVueTypes = async () => {
     .filter(path => !DEMO_RE.test(path))
     .filter(path => !TEST_RE.test(path))
     .filter(exclude)
-
   await Promise.all(
     filePaths.map(async file => {
+      // 如果是vue文件
       if (file.endsWith('.vue')) {
         const content = await fs.promises.readFile(file, 'utf-8')
         const sfc = vueCompiler.parse(content)
+        // sfc 编译为一个对象
         const { script, scriptSetup } = sfc.descriptor
         if (script || scriptSetup) {
           let content = ''
@@ -94,7 +100,7 @@ const genVueTypes = async () => {
     const emitOutput = sourceFile.getEmitOutput()
     for (const outputFile of emitOutput.getOutputFiles()) {
       const filepath = outputFile.getFilePath()
-
+      // 创建d.ts文件
       await fs.promises.mkdir(path.dirname(filepath), {
         recursive: true,
       })

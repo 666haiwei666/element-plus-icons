@@ -1,11 +1,18 @@
+// 生成../packages/components下的组件
+
+
 const fs = require('fs')
 const path = require('path')
 const chalk = require('chalk')
 const { optimize } = require('svgo')
+// svgo是一个基于 Node.js 的工具，用于优化 SVG 矢量图形文件
 
 const ROOT = path.resolve(__dirname, '../source')
+// svg图片的根路径
 const outDir = path.resolve(__dirname, '../packages/components')
+// 组件的路径
 
+// svgo的压缩配置
 const config = {
   plugins: [
     'cleanupAttrs',
@@ -70,11 +77,11 @@ async function transform(filename) {
   const content = await fs.promises.readFile(path.resolve(ROOT, filename), {
     encoding: 'utf-8',
   })
-
+  // 文件名
   const basename = filename
     .split('.svg')
     .shift()
-
+  // 组件名
   const componentName = basename.split('-')
     .map(capitalizeInitial)
     .join('')
@@ -84,7 +91,9 @@ async function transform(filename) {
   // TODO: make this generic and pipe-able for generating
   // reusable code like ant design icon does.
   const transformed = transformToVue3(optimized.data, componentName)
+  // 写入生成的组件文件
   return writeToDisk(transformed, componentName).then(() => {
+    // indexContent 文件生成
     indexContent.push(
       `export { default as ${componentName} } from './${componentName}.vue'`
     )
